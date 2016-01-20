@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>ハノイの塔</title>
+</head>
+
+<body>
+    <canvas id="screen" width="600" height="120"></canvas>
+
+    <script>
+        // canvas の情報を取得
+        var canvas = document.getElementById("screen");
+        var width = canvas.width;
+        var height = canvas.height;
+        
+        // ゲームの設定
+        var diskCount = 5;
+        var columnWidth = width / 3; // 1列あたりの幅
+        var baseWidth = 150; // 土台の幅
+        var baseHeight = 20; // 土台の高さ
+        var baseColor = "#CC6633" // 土台の色
+        var diskWidth = 135; // 1番大きい円盤の幅
+        var deltaDiskWidth = 15; // 円盤の幅の減少量
+        var diskHeight = 20; // 円盤の高さ
+        var diskPers = 19; // 円盤の奥行き
+        var diskColorLight = "#FFFF00"; // 円盤の側面の色
+        var diskColorDark = "#FFD700"; // 円盤の上底の色
+        var diskStrokeColor = "#444444" // 円盤の線の色
+        
+        // タワーの配列
+        // rods[0]: 左, rods[1]: 中央, rods[2]: 右
+        var rods = [];
+        
+        // 動かした回数
+        var moveCount = 0;
+        
+        // 移動中の円盤情報
+        var moving = null;
+        
+        // ctx を使って描画する
+        var ctx = canvas.getContext("2d");
+        
+        // 関数 ellipse
+        // 楕円を描く
+        // cx, cy: 中心座標
+        // rx: X軸方向の半径, ry: Y軸方向の半径
+        function ellipse(cx, cy, rx, ry)
+        {
+            // 横に1倍, 縦にry/rx倍
+            ctx.scale(1, ry / rx);
+            // 縦の座標に注意しながら円を描く
+            ctx.arc(cx, cy * rx / ry, rx, 0, 2 * Math.PI, false);
+            // 縦に拡大縮小したのを戻す
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+        }
+        
+        // 描画メイン
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            // 3個の土台を描画
+            for (var i = 0; i < 3; i++) {
+                // 描く線の情報をリセット
+                ctx.beginPath();
+                
+                // 円の中心を求める
+                var x = (columnWidth * i) + (columnWidth / 2);
+                var y = height - (baseHeight / 2);
+                                    
+                // 楕円を描く
+                ellipse(x, y, baseWidth / 2, baseHeight / 2);
+                
+                // 塗りつぶす
+                ctx.fillStyle = baseColor;
+                ctx.fill();
+            }
+            
+            // タワーごとにループ
+            for (var i = 0; i < rods.length; i++) {
+                var disks = rods[i];
+                var x = (columnWidth * i) + (columnWidth / 2);
+                
+                // タワーの円盤をそれぞれ描画
+                for (var j = 0; j < disks.length; j++) {
+                    var n = disks[j];
+                    // j が大きくなるほど上に表示されるように
+                    var y = height - 23 - (j * diskHeight);                    
+                    drawDisk(n, x, y);
+                }
+            }
+            
+            // 動かしている円盤があるならば
+            if (moving) {
+                drawDisk(moving.n, moving.x, moving.y);
+            }
+        }
+        
+        // 円盤を描画
+        // n: 円盤番号（大きさ）
+        // x, y: 中心座標
+        function drawDisk(n, x, y) {
+            // 円盤の幅 w = 1番大きい幅 - (大きい方から何番目か * 減少量)
+            var w = diskWidth - ((diskCount - n + 1) * deltaDiskWidth);
+            
+            // 奥行きを幅が減少した分だけ減少させる
+            var ry = (diskPers * (w / diskWidth)) / 2;
+            
+            ctx.strokeStyle = diskStrokeColor;
+            
+            // 側面
+            ctx.beginPath();
+            // まず下底を描く
+            ellipse(x, y + (diskHeight / 2), w / 2, ry);
+            // さらに側面（四角）を描く
+            ctx.rect(
+                x - (w / 2), // 左上のX座標
+                y - (diskHeight / 2), // 左上のY座標
+                w,
+                diskHeight);
+            // 下底と側面を合わせた図形の線を引き、塗りつぶす
+            ctx.stroke();
+            ctx.fillStyle = diskColorDark;
+            ctx.fill();
+            
+            // 上底
+            ctx.beginPath();
+            ellipse(x, y - (diskHeight / 2), w / 2, ry);
+            ctx.stroke();
+            ctx.fillStyle = diskColorLight;
+            ctx.fill();
+        }
+        
+        function init() {
+            // rods の初期化
+            rods = [ [], [], [] ];
+            for (var i = diskCount; i >= 1; i--) {
+                rods[0].push(i);
+            }
+            
+            // 回数リセット
+            moveCount = 0;
+            
+            draw();
+        }
+        
+        // 移動中の円盤を元に戻す
+        function cancelMove() {
+            if (moving) {
+                // 元のタワーに移動中の円盤を追加
+                rods[moving.rodIndex].push(moving.n);
+                // 移動終わり
+                moving = null;
+            }
+        }
+        
+        // マウスのボタンが押された時のイベントの処理を登録
+        canvas.addEventListener("mousedown", function(e) {
+            // 円盤を動かしている途中にイベントが発生した時に
+            // 円盤が消失することを防ぐ
+            cancelMove();
+            
+            // 左側なら0, 中央なら1, 右側なら2
+            // 「マウスのX座標 / 3等分の幅」を小数点以下切り捨て
+            var rodIndex = Math.floor(e.clientX / columnWidth);
+            var disks = rods[rodIndex];
+            
+            // 動かせる円盤があるならば
+            if (disks.length > 0) {
+                moving = {
+                    rodIndex: rodIndex,
+                    n: disks.pop(), // タワーから該当円盤を削除して、番号を取得
+                    x: e.clientX,
+                    y: e.clientY
+                };
+            }
+            
+            draw();
+        }, false);
+        
+        // マウスが動いた時のイベントの処理を登録
+        canvas.addEventListener("mousemove", function(e) {
+            if (moving) {
+                // 移動中の円盤の情報を更新
+                moving.x = e.clientX;
+                moving.y = e.clientY;
+                draw();
+            }
+        }, false);
+        
+        // マウスのボタンが離された時のイベントの処理を登録
+        canvas.addEventListener("mouseup", function(e) {
+            if (!moving) return; // 移動中でないなら何もしない
+            
+            // 移動先のタワーを計算（mousedown と同じ）
+            var rodIndex = Math.floor(e.clientX / columnWidth);
+            var disks = rods[rodIndex];
+            
+            // 移動元と移動先が違う かつ
+            // 移動先に円盤がない または 移動中の円盤が移動先の一番上より小さいならば
+            if (rodIndex != moving.rodIndex && (disks.length == 0 || moving.n < disks[disks.length - 1])) {
+                // 移動先タワーに円盤を追加
+                disks.push(moving.n);
+                // 移動終わり
+                moving = null;
+                // moveCount を増やす
+                moveCount++;
+                
+                // 右側に全部揃っているなら
+                if (rods[2].length == diskCount) {
+                    // ゲーム終了
+                    draw();
+                    alert(moveCount + "手でクリア！");
+                    // 最初の状態に戻す
+                    init();
+                }
+            } else {
+                // そうでないなら移動はなかったことにする
+                cancelMove();
+            }
+            
+            draw();
+        }, false);
+        
+        init();
+    </script>
+</body>
+
+</html>
