@@ -1,0 +1,11 @@
+.warn {
+    border: solid 2px orange;
+    padding: .85em .85em 0 .85em;
+    margin-bottom: .85em;
+}
+
+.advance {
+    border: solid 2px red;
+    padding: .85em .85em 0 .85em;
+    margin-bottom: .85em;
+}

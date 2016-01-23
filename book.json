@@ -1,4 +1,5 @@
 {
     "description": "JavaScriptでハノイの塔をつくる、創刊号は0円！",
-    "language": "ja"
+    "language": "ja",
+    "plugins": [ "katex" ]
 }

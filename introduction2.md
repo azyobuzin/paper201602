@@ -15,10 +15,10 @@
 また、次にやることが予測できたならば、このチュートリアルを読み進める前に自分でやってみてもいいかもしれません。
 
 ### 強い人
-ツッコミお待ちしています。
+ツッコミお待ちしております。GitBook, GitHub, Twitterなどの方面からまさかりを投げつけることができます。
 
 ## 動作確認
-<iframe src="samples/index.html" width="620" height="220" frameborder="0"></iframe>
+<iframe src="samples/index.html" height="220" frameborder="0" style="width:620px; max-width:100%"></iframe>
 
 ここに表示されているのは完成品です。円盤をドラッグして動かせることを確認してください。
 もし円盤が表示されない場合はブラウザが古すぎます。なんとかしてください（タッチパネルでは動きません）。
