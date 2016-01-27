@@ -57,22 +57,16 @@ ctx.arc(cx, cy * rx / ry, rx, 0, 2 * Math.PI, false);
 ```
 
 これで終わりにしてしまうと、このあとほかの図形を描くときに、この倍率が適用されてしまうので、戻してあげなければいけません。
-簡単なやり方は、`ctx.scale`に今の倍率の逆数を入れてあげれば1に戻りますね。
-
-<div class="advance">
-<p>これを読んで挫折されてしまうと困るのでここは発展にしておきます:
-しかし小数点以下の計算なので誤差が出る可能性があるので、本当に1に戻す方法を紹介します。</p>
-<p>
-内部ではパスに対して行列計算（アフィン変換）を施して座標を入れ替えています。
-これを「座標を変換しない」設定にするとでリセットすることができます。
-具体的には $$\begin{pmatrix}1&0&0\\0&1&0\\0&0&1\end{pmatrix}$$ にしてあげます。
-</p>
-<p>
-変換行列の指定には<code>ctx.setTransform(a, b, c, d, e, f)</code>を使います。
-引数は $$\begin{pmatrix}a&c&e\\b&d&f\\0&0&1\end{pmatrix}$$ に一致するので、
-<code>ctx.setTransform(1, 0, 0, 1, 0, 0)</code>とすれば良さそうです。
-</p>
-</div>
+幸い`ctx.save`という描画設定を保存しておく関数と、`ctx.restore`という保存した設定を取り出すことができる関数があるのでこれらを使っていきましょう。
+保存すべき状態は拡大縮小を行う前なので、`ctx.scale`を呼び出す前に
+```javascript
+ctx.save();
+```
+を追加します。そして楕円のパスが追加された後で元に戻すよう、最後に
+```javascript
+ctx.restore();
+```
+と書けば完成です。
 
 というわけで、関数`ellipse`はこのようになりました。
 
@@ -81,10 +75,10 @@ ctx.arc(cx, cy * rx / ry, rx, 0, 2 * Math.PI, false);
 // rx: X軸方向の半径, ry: Y軸方向の半径
 function ellipse(cx, cy, rx, ry)
 {
+    ctx.save();
     ctx.scale(1, ry / rx);
     ctx.arc(cx, cy * rx / ry, rx, 0, 2 * Math.PI, false);
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    // または ctx.scale(1, rx / ry);
+    ctx.restore();
 }
 ```
 
@@ -93,7 +87,51 @@ function ellipse(cx, cy, rx, ry)
 発展と愚痴: 難しいゾーンお疲れ様でした。しかしここで皆さんに重要なお知らせがあります。
 なんと<code>ctx.ellipse</code>という方法が存在します！！
 しかしですね、学校のPCに入ってるInternet Explorer 11、あいつがですね、これに対応してないんですよ！！ふざけんな。
+あ、あとFirefoxも。
 というわけで、IEよりもっとモダンなブラウザを使っている方は<code>ctx.ellipse</code>を使ってみてください。
 使い方を調べるのが発展問題ということで。Mozilla Developer Networkとかにあってみて英語に慣れたりするといいと思います。
 </p>
 </div>
+
+## ゲームの設定を変数に保存しておく
+土台を描くにあたって、まず色や大きさを決めましょう。土台の色は最初で紹介した完成品と同じくこの色にします。
+
+<span style="background-color:#CC6633;display:inline-block;width:20px;height:20px"></span> #CC6633
+
+`<canvas>`の幅が600pxなので、1タワーあたり200px使えるとすると、すこし余白がほしいので、土台は150pxとしましょう。
+奥行きがあるように見せたいので楕円として、高さは20pxにします。
+
+![土台の大きさ](images/base.png)
+
+これらを変数に保存しておきます。こうしておくことで、後で色や大きさを変更しようと思ったときに、この変数の部分をだけを書き換えれば全体に反映されて、メンテナンス性が高まります。
+`var ctx`の次の行にこれらの変数を追加します。
+
+```javascript
+var columnWidth = width / 3; // 1列あたりの幅 = 200
+var baseWidth = 150; // 土台の幅
+var baseHeight = 20; // 土台の高さ
+var baseColor = "#CC6633" // 土台の色
+```
+
+## ループで土台を描く
+土台を3個描かなくてはなりません。あなたならどうしますか？
+
+「3回分プログラムを書けばいいじゃない」、その通りです。
+でも、3個とも色を変えたい、形を変えたいと思ったとき、3回書き換えを行わなければなりません。
+このように、同じことを繰り返すことを共通化しないで、回数分のプログラムを書くと、あとあと変更しようと思ったときに困ります。
+というわけで、繰り返しを共通化する`for`文の書き方を覚えましょう。
+
+まずやりたいことを考えます。3つの楕円を描くとき、中心のX座標は違いますが、そのほかの要素（Y座標, 色, 大きさ）は同じです。
+中心のX座標は次のように求められます。
+
+* $$columnWidth \div 2 = columnWidth \times 0 + columnWidth \div 2$$
+* $$columnWidth \times 1 + columnWidth \div 2$$
+* $$columnWidth \times 2 + columnWidth \div 2$$
+
+![X座標](images/basexc.png)
+
+つまりこのようにまとめられますね。
+
+$$
+columnWidth \times i + columnWidth \div 2 \;\;\; (i = 0, 1, 2)
+$$

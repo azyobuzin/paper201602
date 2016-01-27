@@ -48,12 +48,14 @@
         // rx: X軸方向の半径, ry: Y軸方向の半径
         function ellipse(cx, cy, rx, ry)
         {
+            // 拡大縮小する前の状態を保存
+            ctx.save();
             // 横に1倍, 縦にry/rx倍
             ctx.scale(1, ry / rx);
             // 縦の座標に注意しながら円を描く
             ctx.arc(cx, cy * rx / ry, rx, 0, 2 * Math.PI, false);
             // 縦に拡大縮小したのを戻す
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.restore();
         }
         
         // 描画メイン
