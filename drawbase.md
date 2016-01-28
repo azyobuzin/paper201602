@@ -135,3 +135,127 @@ var baseColor = "#CC6633" // 土台の色
 $$
 columnWidth \times i + columnWidth \div 2 \;\;\; (i = 0, 1, 2)
 $$
+
+これをプログラムにしていきましょう。`for`文を使ったループはこのように書きます。
+
+```javascript
+for (変数定義; 条件; インクリメント) {
+    中身
+}
+
+// 例
+for (var i = 0; i < 2; i++) {
+    alert(i);
+}
+```
+
+まずはじめに変数定義が実行されます。例では`i`という変数が定義され、`0`がセットされています。
+次に条件を満たしているかがチェックされます。条件を満たしているなら中身を実行します。
+その後、インクリメントが行われます。例では`i++`つまり`i = i + 1`で`i`が1増加されます。
+そしてまた条件のチェックが行われ……という具合に実行されます。条件を満たさなくなったら、ループは終了します。
+
+例はこのように動作します。
+
+1. 変数`i`を定義し、`0`をセット
+2. `i < 2`を満たしているかどうか → `i = 0`なので満たす
+3. `alert(i)` → 「0」と表示
+4. `i++` → `i = 1`
+5. `i < 2`を満たしているかどうか → `i = 1`なので満たす
+6. `alert(i)` → 「1」と表示
+7. `i++` → `i = 2`
+8. `i < 2`を満たしているかどうか → `i = 2`なので満たさない
+9. ループ終了
+
+それでは実際に土台の描画にあてはめてみましょう。`i = 0, 1, 2`としたいので`for`文はこのようになります。
+
+```javascript
+for (var i = 0; i < 3; i++) {
+    
+}
+```
+
+これを`draw`関数内の、`clearRect`の後に書けば、準備完了です。では土台の楕円を描きましょう。まずはじめは
+```javascript
+ctx.beginPath();
+```
+から始めるのでしたね。
+
+楕円の中心のX座標を先ほどの式を使って計算しましょう。結果はとりあえず`x`という変数に入れておきます。
+```javascript
+var x = columnWidth * i + columnWidth / 2;
+```
+
+Y座標は`<canvas>`の下にぴったりくっつくようにしたいので、`height`から`baseHeight`の半分を引いた値にします。
+```javascript
+var y = height - baseHeight / 2;
+```
+
+楕円の横の半径と縦の半径は、それぞれ`baseWidth`と`baseHeight`の半分なので、これで`ellipse`関数を呼び出す準備ができました。
+```javascript
+ellipse(x, y, baseWidth / 2, baseHeight / 2);
+```
+
+最後に塗りつぶしましょう。色は`baseColor`変数に入っているのでこれを使用します。
+```javascript
+ctx.fillStyle = baseColor;
+ctx.fill();
+```
+
+これで`for`の中身は完成です。実行してみましょう。このようになりましたか？
+
+![こうなるはず](images/drawnbase.png)
+
+この章までの`hanoi.html`全体はこのようになります。
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ハノイの塔</title>
+</head>
+<body>
+    <canvas id="screen" width="600" height="200"></canvas>
+
+    <script>
+        var canvas = document.getElementById("screen");
+        var width = canvas.width;
+        var height = canvas.height;
+        var ctx = canvas.getContext("2d");
+
+        var columnWidth = width / 3; // 1列あたりの幅 = 200
+        var baseWidth = 150; // 土台の幅
+        var baseHeight = 20; // 土台の高さ
+        var baseColor = "#CC6633" // 土台の色
+
+        // cx, cy: 中心座標
+        // rx: X軸方向の半径, ry: Y軸方向の半径
+        function ellipse(cx, cy, rx, ry)
+        {
+            ctx.save();
+            ctx.scale(1, ry / rx);
+            ctx.arc(cx, cy * rx / ry, rx, 0, 2 * Math.PI, false);
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+            
+            for (var i = 0; i < 3; i++) {
+                ctx.beginPath();
+                var x = columnWidth * i + columnWidth / 2;
+                var y = height - baseHeight / 2;
+                ellipse(x, y, baseWidth / 2, baseHeight / 2);
+                ctx.fillStyle = baseColor;
+                ctx.fill();
+            }
+        }
+
+        function init() {
+            draw();
+        }
+
+        init();
+    </script>
+</body>
+</html>
+```

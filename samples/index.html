@@ -70,7 +70,7 @@
                 // 円の中心を求める
                 var x = (columnWidth * i) + (columnWidth / 2);
                 var y = height - (baseHeight / 2);
-                                    
+
                 // 楕円を描く
                 ellipse(x, y, baseWidth / 2, baseHeight / 2);
                 
@@ -88,7 +88,7 @@
                 for (var j = 0; j < disks.length; j++) {
                     var n = disks[j];
                     // j が大きくなるほど上に表示されるように
-                    var y = height - 23 - (j * diskHeight);                    
+                    var y = height - 23 - (j * diskHeight);
                     drawDisk(n, x, y);
                 }
             }
