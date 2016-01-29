@@ -6,4 +6,5 @@
     * [プログラムで絵を描こう](canvas.md)
 * [プログラミング編](design2.md)
     * [土台を描画する](drawbase.md)
+    * [円盤を描画する](drawdisk.md)
 * [【おまけ】まだメモ帳で消耗してるの？](vscode.md)

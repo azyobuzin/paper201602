@@ -104,7 +104,7 @@
         // x, y: 中心座標
         function drawDisk(n, x, y) {
             // 円盤の幅 w = 1番大きい幅 - (大きい方から何番目か * 減少量)
-            var w = diskWidth - ((diskCount - n + 1) * deltaDiskWidth);
+            var w = diskWidth - ((diskCount - n) * deltaDiskWidth);
             
             // 奥行きを幅が減少した分だけ減少させる
             var ry = (diskPers * (w / diskWidth)) / 2;
