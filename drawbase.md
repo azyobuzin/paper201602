@@ -205,8 +205,7 @@ ctx.fill();
 
 ![こうなるはず](images/drawnbase.png)
 
-この章までの`hanoi.html`全体はこのようになります。
-
+## ここまでの hanoi.html
 ```html
 <!DOCTYPE html>
 <html>

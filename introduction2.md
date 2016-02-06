@@ -16,6 +16,7 @@
 
 ### 強い人
 ツッコミお待ちしております。GitBook, GitHub, Twitterなどの方面からまさかりを投げつけることができます。
+そもそも僕JavaScriptに強い人間ではないので…。
 
 ## 動作確認
 <iframe src="samples/index.html" height="220" frameborder="0" style="width:620px; max-width:100%"></iframe>

@@ -7,4 +7,6 @@
 * [プログラミング編](design2.md)
     * [土台を描画する](drawbase.md)
     * [円盤を描画する](drawdisk.md)
+    * [円盤をマウスで動かす](move.md)
+    * [さぁ仕上げだ!](finish.md)
 * [【おまけ】まだメモ帳で消耗してるの？](vscode.md)

@@ -111,7 +111,7 @@ var b = x[1];
 var c = x[2];
 ```
 
-`配列[番号]`という書き方ですね。このとき一番はじめが`0`から始まることに注意してください。
+`配列[番号]`という書き方ですね（この番号を添字といいます）。このとき一番はじめが`0`から始まることに注意してください。
 
 そして、配列もまたオブジェクトなので、配列の中身として配列を入れることもできます。
 
@@ -171,4 +171,182 @@ rods[0].push(i);
 これで円盤の情報を変数に詰め終わりました。
 
 ## すべての円盤を描画する
+さぁ今度は`rods`変数の情報を基に円盤を描きましょう。
+配列の中身を調べるのにもループを使います。
+`draw`関数の`drawDisk(5, 100, 100);`の行を消してループを作っていきましょう。
 
+まずはタワーごとの円盤の配列を取り出すところからです。
+タワーは3本で、配列の添字は`0`から始まるので、`i`が`0`から`2`までのループをつくればいいですね。
+
+```javascript
+for (var i = 0; i < 3; i++) {
+    var disks = rods[i];
+    
+}
+```
+
+この時点で円盤の中心のX座標も確定しているので、変数`x`に入れておきましょう。
+これは土台と同じです。
+
+```javascript
+var x = columnWidth * i + columnWidth / 2;
+```
+
+それでは、さらに`disks`の中身をループで取り出していきましょう。
+ループの中にループを書くことはよくあることです。
+配列の中身の個数は`配列.length`で取得できます。
+そして変数`i`はすでに使っているので、別の名前、たとえば`j`にしておきましょう（二重ループで間違えて同じ変数名を使ってしまうと条件判定でおかしくなることは想像できますね）。
+
+```javascript
+for (var j = 0; j < disks.length; j++) {
+    var n = disks[j];
+    
+}
+```
+
+`drawDisk(n, x, y)`を呼び出すのに必要な値はあとは`y`ですね。
+この値は`height - 土台を考慮して数十px - (j * diskHeight)`で求められます。
+`j`に0,1,2...と値を入れていけば、どのような結果になるかはわかると思います。
+「土台を考慮して数十px」は個人的に23pxがちょうどいいかなと思ったのでこれでいきましょう（実際に描画できるようになってから自分で調整してみてください）。
+
+```javascript
+var y = height - 23 - (j * diskHeight);
+drawDisk(n, x, y);
+```
+
+これで二重ループは完成です。実行してみましょう。
+
+![あっ…](images/samewidth.png)
+
+なんだこれは、ホットケーキか！？（パンケーキと言わないあたりが庶民）
+
+これはこれでおいしそうですけど、ちゃんとサイズの違いをつけないと、極悪非道ゲームになってしまうので直しましょう。
+`drawDisk`のところで、`w`と`ry`はあとで変えると言いましたね、あそこです。
+
+まずゲーム設定変数のところに、`n`が1小さくなるとどのくらい円盤の幅を減少させるかを表す変数を定義します。
+
+```javascript
+var deltaDiskWidth = 15; // 円盤の幅の減少量
+```
+
+`w`は`diskWidth - (大きい方から何番目か * 減少量)`で求めることができます（一番大きいのは0番目と考えます）。よって
+
+```javascript
+var w = diskWidth - ((diskCount - n) * deltaDiskWidth);
+```
+
+そして奥行きも`w`の値によって違いをつけないと違和感が生まれるので、`ry`にも差をつけます。
+これは`w / diskWidth`を掛けてあげればそれっぽくなるはずです。
+
+```javascript
+var ry = diskPers / 2 * (w / diskWidth);
+```
+
+これでうまくタワーができあがりました。疲れましたね。今日は帰って寝ましょう。
+
+## ここまでの hanoi.html
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ハノイの塔</title>
+</head>
+<body>
+    <canvas id="screen" width="600" height="200"></canvas>
+
+    <script>
+        var canvas = document.getElementById("screen");
+        var width = canvas.width;
+        var height = canvas.height;
+        var ctx = canvas.getContext("2d");
+        
+        var columnWidth = width / 3; // 1列あたりの幅 = 200
+        var baseWidth = 150; // 土台の幅
+        var baseHeight = 20; // 土台の高さ
+        var baseColor = "#CC6633" // 土台の色
+        var diskWidth = 135; // 1番大きい円盤の幅
+        var diskHeight = 20; // 円盤の四角形の高さ
+        var diskPers = 19; // 円盤の楕円の高さ
+        var diskColorLight = "#FFFF00"; // 円盤の側面の色
+        var diskColorDark = "#FFD700"; // 円盤の上面の色
+        var diskStrokeColor = "#444444" // 円盤の線の色
+        var diskCount = 5;
+        var rods = [];
+        var deltaDiskWidth = 15; // 円盤の幅の減少量
+
+        // cx, cy: 中心座標
+        // rx: X軸方向の半径, ry: Y軸方向の半径
+        function ellipse(cx, cy, rx, ry)
+        {
+            ctx.save();
+            ctx.scale(1, ry / rx);
+            ctx.arc(cx, cy * rx / ry, rx, 0, 2 * Math.PI, false);
+            ctx.restore();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, width, height);
+
+            for (var i = 0; i < 3; i++) {
+                ctx.beginPath();
+                var x = columnWidth * i + columnWidth / 2;
+                var y = height - baseHeight / 2;
+                ellipse(x, y, baseWidth / 2, baseHeight / 2);
+                ctx.fillStyle = baseColor;
+                ctx.fill();
+            }
+
+            for (var i = 0; i < 3; i++) {
+                var disks = rods[i];
+                var x = columnWidth * i + columnWidth / 2;
+
+                for (var j = 0; j < disks.length; j++) {
+                    var n = disks[j];
+                    var y = height - 23 - (j * diskHeight);
+                    drawDisk(n, x, y);
+                }
+            }
+        }
+
+        // n: 円盤番号（大きさ）
+        // x, y: 中心座標
+        function drawDisk(n, x, y) {
+            var w = diskWidth - ((diskCount - n) * deltaDiskWidth);
+            var ry = diskPers / 2 * (w / diskWidth);
+            ctx.strokeStyle = diskStrokeColor;
+
+            ctx.beginPath();
+            ellipse(x, y + (diskHeight / 2), w / 2, ry);
+            ctx.rect(x - (w / 2), y - (diskHeight / 2), w, diskHeight);
+            ctx.stroke();
+            ctx.fillStyle = diskColorDark;
+            ctx.fill();
+
+            ctx.beginPath();
+            ellipse(x, y - (diskHeight / 2), w / 2, ry);
+            ctx.stroke();
+            ctx.fillStyle = diskColorLight;
+            ctx.fill();
+        }
+
+        function init() {
+            rods = [ [], [], [] ];
+
+            for (var i = diskCount; i >= 1; i--) {
+                rods[0].push(i);
+            }
+
+            draw();
+        }
+
+        init();
+    </script>
+</body>
+</html>
+```
+
+## 発展問題
+* `diskCount`を変えても正しく動くことを確認してみましょう。
+* `rods`の中身を書き換えても正しく動くことを確認してみましょう。
+* `配列.foreach`という関数を使ってループを書き換えてみましょう。使い方は自分で調べてください。
+* `draw`関数内では`i = 0, 1, 2`のループが2回行われていますが、まとめることができそうですね。やってみましょう。
