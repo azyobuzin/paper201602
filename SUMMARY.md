@@ -9,4 +9,6 @@
     * [円盤を描画する](drawdisk.md)
     * [円盤をマウスで動かす](move.md)
     * [さぁ仕上げだ!](finish.md)
+* [終わりに](closing.md)
+* [うまく動かないときは](troubleshooting.md)
 * [【おまけ】まだメモ帳で消耗してるの？](vscode.md)
