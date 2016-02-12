@@ -19,7 +19,7 @@
 そもそも僕JavaScriptに強い人間ではないので…。
 
 ## 動作確認
-<iframe src="samples/index.html" height="220" frameborder="0" style="width:620px; max-width:100%"></iframe>
+<iframe src="samples/index.html" frameborder="0" style="width:100%;height:200px"></iframe>
 
 ここに表示されているのは完成品です。円盤をドラッグして動かせることを確認してください。
 もし円盤が表示されない場合はブラウザが古すぎます。なんとかしてください（タッチパネルでは動きません）。
